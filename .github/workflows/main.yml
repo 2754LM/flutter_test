@@ -1,11 +1,12 @@
 name: GitHub Actions Demo
+
 on:
   push:
     tags:
       - '*'  # 只在推送标签时触发
 
-jobs: 
-  build_and_test:  
+jobs:
+  build_and_test:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code  # 第一步，检出代码
@@ -25,30 +26,26 @@ jobs:
     - name: Clean build directory  # 第五步，清理构建目录
       run: flutter clean
 
-    - name: Get version number  # 第六步，获取版本号
-      id: get_version
-      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-
-    - name: Build APK  # 第七步，构建APK
+    - name: Build APK  # 第六步，构建APK
       run: flutter build apk
 
-    - name: Move APK to dist directory  # 第八步，将APK移动到dist文件夹
-      run: mv build/app/outputs/flutter-apk/app-release.apk dist/app-release-${{ env.VERSION }}.apk
+    - name: Move APK to dist directory  # 第七步，将APK移动到dist文件夹
+      run: mv build/app/outputs/flutter-apk/app-release.apk dist/app-release-${{ github.ref_name }}.apk
 
-    - name: Build Windows app  # 第九步，构建Windows应用
+    - name: Build Windows app  # 第八步，构建Windows应用
       run: flutter build windows
 
-    - name: Create Windows ZIP  # 第十步，打包Windows应用为ZIP文件
-      run: zip -r dist/windows-app-${{ env.VERSION }}.zip build/windows/runner/Release/*
+    - name: Create Windows ZIP  # 第九步，打包Windows应用为ZIP文件
+      run: zip -r dist/windows-app-${{ github.ref_name }}.zip build/windows/runner/Release/*
 
-    - name: Archive APK  # 第十一步，归档APK文件
+    - name: Archive APK  # 第十步，归档APK文件
       uses: actions/upload-artifact@v2
       with:
         name: release-apk
-        path: dist/app-release-${{ env.VERSION }}.apk
+        path: dist/app-release-${{ github.ref_name }}.apk
 
-    - name: Archive Windows ZIP  # 第十二步，归档Windows ZIP文件
+    - name: Archive Windows ZIP  # 第十一步，归档Windows ZIP文件
       uses: actions/upload-artifact@v2
       with:
         name: release-windows
-        path: dist/windows-app-${{ env.VERSION }}.zip
+        path: dist/windows-app-${{ github.ref_name }}.zip
