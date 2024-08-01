@@ -18,17 +18,33 @@ jobs:
     - name: Run tests  # 第四步，运行测试
       run: flutter test
 
-    - name: Build APK  # 第五步，构建APK
+    - name: Clean build directory  # 第五步，清理构建目录
+      run: flutter clean
+
+    - name: Get version number  # 第六步，获取版本号
+      id: get_version
+      run: echo "VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //')" >> $GITHUB_ENV
+
+    - name: Build APK  # 第七步，构建APK
       run: flutter build apk
 
-    - name: Create dist directory  # 第六步，创建dist文件夹
-      run: mkdir -p dist
+    - name: Move APK to dist directory  # 第八步，将APK移动到dist文件夹
+      run: mv build/app/outputs/flutter-apk/app-release.apk dist/app-release-$VERSION.apk
 
-    - name: Move APK to dist directory  # 第七步，将APK移动到dist文件夹
-      run: mv build/app/outputs/flutter-apk/app-release.apk dist/
+    - name: Build Windows app  # 第九步，构建Windows应用
+      run: flutter build windows
 
-    - name: Archive production artifacts  # 第八步，归档产物
+    - name: Create Windows ZIP  # 第十步，打包Windows应用为ZIP文件
+      run: zip -r dist/windows-app-$VERSION.zip build/windows/runner/Release/*
+
+    - name: Archive APK  # 第十一步，归档APK文件
       uses: actions/upload-artifact@v2
       with:
         name: release-apk
-        path: dist/app-release.apk
+        path: dist/app-release-${{ env.VERSION }}.apk
+
+    - name: Archive Windows ZIP  # 第十二步，归档Windows ZIP文件
+      uses: actions/upload-artifact@v2
+      with:
+        name: release-windows
+        path: dist/windows-app-${{ env.VERSION }}.zip
