@@ -1,17 +1,34 @@
 name: GitHub Actions Demo
 on: [push]
-jobs:
-  Explore-GitHub-Actions:
+jobs: 
+  build_and_test:  
     runs-on: ubuntu-latest
     steps:
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-      - name: Check out repository code
-        uses: actions/checkout@v2
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-      - name: List files in the repository
-        run: |
-          ls ${{ github.workspace }}
-      - run: echo "🍏 This job's status is ${{ job.status }}."
+    - name: Checkout code  # 第一步，检出代码
+      uses: actions/checkout@v2
+
+    - name: Setup Flutter  # 第二步，设置Flutter环境
+      uses: subosito/flutter-action@v1
+      with:
+        flutter-version: '3.22.2'  # 指定Flutter版本号
+
+    - name: Install dependencies  # 第三步，安装依赖
+      run: flutter pub get
+
+    - name: Run tests  # 第四步，运行测试
+      run: flutter test
+
+    - name: Build APK  # 第五步，构建APK
+      run: flutter build apk
+
+    - name: Create dist directory  # 第六步，创建dist文件夹
+      run: mkdir -p dist
+
+    - name: Move APK to dist directory  # 第七步，将APK移动到dist文件夹
+      run: mv build/app/outputs/flutter-apk/app-release.apk dist/
+
+    - name: Archive production artifacts  # 第八步，归档产物
+      uses: actions/upload-artifact@v2
+      with:
+        name: release-apk
+        path: dist/app-release.apk
