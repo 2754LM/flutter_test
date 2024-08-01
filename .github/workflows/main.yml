@@ -26,6 +26,9 @@ jobs:
     - name: Clean build directory  # 第五步，清理构建目录
       run: flutter clean
 
+    - name: Create dist directory
+      run: mkdir -p dist  # 创建 dist 文件夹，如果不存在的话
+      
     - name: Build APK  # 第六步，构建APK
       run: flutter build apk
 
